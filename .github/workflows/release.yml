@@ -63,7 +63,7 @@ jobs:
 
   macos-cpu:
     needs: [check-release, ui-build]
-    if: ${{ needs.check-release.outputs.should_release == 'true' }}
+    if: false  # TEMP: arm64-only test build - revert before merge
     strategy:
       matrix:
         include:
@@ -143,7 +143,7 @@ jobs:
 
   ubuntu-cpu:
     needs: [check-release, ui-build]
-    if: ${{ needs.check-release.outputs.should_release == 'true' }}
+    if: false  # TEMP: arm64-only test build - revert before merge
     strategy:
       matrix:
         include:
@@ -228,7 +228,7 @@ jobs:
 
   ubuntu-vulkan:
     needs: [check-release, ui-build]
-    if: ${{ needs.check-release.outputs.should_release == 'true' }}
+    if: false  # TEMP: arm64-only test build - revert before merge
 
     strategy:
       matrix:
@@ -312,7 +312,7 @@ jobs:
 
   android-arm64:
     needs: [check-release, ui-build]
-    if: ${{ needs.check-release.outputs.should_release == 'true' }}
+    if: false  # TEMP: arm64-only test build - revert before merge
 
     runs-on: ubuntu-latest
 
@@ -403,7 +403,7 @@ jobs:
 
   ubuntu-24-openvino:
     needs: [check-release, ui-build]
-    if: ${{ needs.check-release.outputs.should_release == 'true' }}
+    if: false  # TEMP: arm64-only test build - revert before merge
 
     runs-on: ubuntu-24.04
 
@@ -520,7 +520,7 @@ jobs:
 
   windows-openvino:
     needs: [check-release, ui-build]
-    if: ${{ needs.check-release.outputs.should_release == 'true' }}
+    if: false  # TEMP: arm64-only test build - revert before merge
 
     runs-on: windows-2022
 
@@ -659,7 +659,7 @@ jobs:
     strategy:
       matrix:
         include:
-          - arch: 'x64'
+          # TEMP: arm64-only test build - restore `- arch: 'x64'` before merge
           - arch: 'arm64'
 
     steps:
@@ -698,6 +698,17 @@ jobs:
             ${{ env.CMAKE_ARGS }}
           cmake --build build --config Release
 
+      # note: CMAKE_ARGS builds with LLAMA_BUILD_TESTS=OFF - reconfigure to enable the
+      #       tests subdirectory and build only test-backend-ops, so that the packaged
+      #       zip can be used to validate a backend on real hardware without rebuilding.
+      #       Building the full "all" target with tests on would compile ~45 test binaries.
+      - name: Build test-backend-ops
+        shell: cmd
+        run: |
+          call "C:\Program Files\Microsoft Visual Studio\18\Enterprise\VC\Auxiliary\Build\vcvarsall.bat" ${{ matrix.arch == 'x64' && 'x64' || 'amd64_arm64' }}
+          cmake -S . -B build -DLLAMA_BUILD_TESTS=ON
+          cmake --build build --config Release --target test-backend-ops
+
       - name: Pack artifacts
         id: pack_artifacts
         run: |
@@ -718,7 +729,7 @@ jobs:
   #       windows-cpu zip during the release "Merge artifacts" step
   windows-rocm:
     needs: [check-release]
-    if: ${{ needs.check-release.outputs.should_release == 'true' }}
+    if: false  # TEMP: arm64-only test build - revert before merge
 
     runs-on: windows-2022
 
@@ -879,7 +890,7 @@ jobs:
   #       is injected from the windows-cpu zip during the release "Merge artifacts" step
   windows:
     needs: [check-release]
-    if: ${{ needs.check-release.outputs.should_release == 'true' }}
+    if: false  # TEMP: arm64-only test build - revert before merge
 
     runs-on: windows-2025
 
@@ -984,12 +995,7 @@ jobs:
     strategy:
       matrix:
         include:
-          - cuda: '12.4'
-            arch: x64
-            defines: '-DGGML_CUDA_CUB_3DOT2=ON'
-          - cuda: '13.3'
-            arch: x64
-            defines: ''
+          # TEMP: arm64-only test build - restore the 12.4/x64 and 13.3/x64 entries before merge
           - cuda: '13.4'
             arch: arm64
             defines: '-DCMAKE_TOOLCHAIN_FILE=cmake/arm64-windows-msvc-cuda.cmake'
@@ -1074,7 +1080,7 @@ jobs:
   #       windows-cpu zip during the release "Merge artifacts" step
   windows-sycl:
     needs: [check-release]
-    if: ${{ needs.check-release.outputs.should_release == 'true' }}
+    if: false  # TEMP: arm64-only test build - revert before merge
 
     runs-on: windows-2022
 
@@ -1177,7 +1183,7 @@ jobs:
 
   ubuntu-24-sycl:
     needs: [check-release, ui-build]
-    if: ${{ needs.check-release.outputs.should_release == 'true' }}
+    if: false  # TEMP: arm64-only test build - revert before merge
 
     strategy:
       matrix:
@@ -1269,7 +1275,7 @@ jobs:
 
   ubuntu-24-rocm:
     needs: [check-release, ui-build]
-    if: ${{ needs.check-release.outputs.should_release == 'true' }}
+    if: false  # TEMP: arm64-only test build - revert before merge
 
     runs-on: ubuntu-24.04
 
@@ -1396,7 +1402,7 @@ jobs:
 
   ios-xcode:
     needs: [check-release]
-    if: ${{ needs.check-release.outputs.should_release == 'true' }}
+    if: false  # TEMP: arm64-only test build - revert before merge
     runs-on: macos-26
 
     steps:
